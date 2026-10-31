@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "filepumper"
+dynamic = ["version"]
+description = "Safely grow existing files to an exact size by appending generic padding bytes (transactional, verifiable, bounded memory), with a terminal UI."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+# Author and repository metadata are intentionally omitted: no upstream
+# repository or maintainer identity has been defined for this project yet.
+# Add `authors` and `[project.urls]` here once they exist.
+keywords = ["file", "padding", "test-data", "fixtures", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Utilities",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7.4"]
+lint = ["ruff>=0.6"]
+# The terminal UI uses the standard-library curses module. It ships with Python on
+# Linux and macOS; Windows needs this small package.
+ui = ["windows-curses>=2.3; sys_platform == 'win32'"]
+dev = ["pytest>=7.4", "ruff>=0.6"]
+
+[project.scripts]
+filepumper = "filepumper.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "filepumper.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = [".venv", "venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "C4", "PT", "RUF"]
+ignore = ["RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+# PT018: "assert a and b" is clearer than two asserts when checking one output string.
+"tests/*" = ["B011", "PT018"]
+# The glyph tables intentionally contain typographic characters (dashes, chevrons).
+"src/filepumper/tui/canvas.py" = ["RUF001"]
