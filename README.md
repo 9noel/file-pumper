@@ -32,6 +32,7 @@ exists, so a failure or Ctrl+C before that point leaves your file untouched.
 - [Safety and file-format limitations](#safety-and-file-format-limitations)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [If `filepumper` is not recognized](#if-filepumper-is-not-recognized)
 - [Quick start](#quick-start)
 - [Terminal UI](#terminal-ui)
 - [Examples](#examples)
@@ -46,8 +47,6 @@ exists, so a failure or Ctrl+C before that point leaves your file untouched.
 - [Development and testing](#development-and-testing)
 - [Architecture](#architecture)
 - [Not implemented](#not-implemented)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -168,6 +167,41 @@ Then check it works:
 filepumper --version
 python -m filepumper --version   # equivalent
 ```
+
+## If `filepumper` is not recognized
+
+If typing `filepumper` gives `'filepumper' is not recognized as an internal or external command`
+(Windows) or `command not found` (Linux/macOS), the install itself worked — the folder pip put the
+`filepumper` launcher in simply isn't on your `PATH`. This is common with a `--user` install, which
+pip uses automatically when the main Python folder isn't writable, and with the Microsoft Store
+version of Python. pip prints a warning about it at the end of the install
+(`The script filepumper.exe is installed in '...' which is not on PATH`).
+
+**Quickest fix: run it as a Python module.** It is exactly the same program and needs no `PATH`
+changes. Every command and option works the same way:
+
+```bash
+python -m filepumper                                   # opens the terminal UI
+python -m filepumper pad sample.bin --add 100MB --dry-run
+python -m filepumper detect sample.bin
+```
+
+On Windows, `py -m filepumper ...` works the same way if `python` is not found either.
+
+**Permanent fix: add the launcher's folder to `PATH`.**
+
+1. Find the folder (this prints it; it is also the path in pip's warning):
+
+   ```bash
+   python -c "import sysconfig, os; print(sysconfig.get_path('scripts', 'nt_user' if os.name == 'nt' else 'posix_user'))"
+   ```
+
+2. Add that folder to your `PATH`.
+   - **Windows:** press `Win`, search for *Edit environment variables for your account*, select `Path` under *User variables*, click *Edit* → *New*, paste the folder, then OK everything.
+   - **Linux/macOS:** add `export PATH="$PATH:<folder>"` to `~/.bashrc` or `~/.zshrc`.
+3. **Open a new terminal window.** Terminals that were already open keep the old `PATH`.
+
+If you installed into a virtual environment, activate it first (`.venv\Scripts\activate` on Windows, `source .venv/bin/activate` elsewhere); the launcher is then on `PATH` automatically.
 
 ## Quick start
 
@@ -738,23 +772,3 @@ These were considered and are deliberately absent rather than shipped half-finis
   check — neither is tuned against, tested against, or makes any claim about real security
   products, and that is a deliberate boundary, not a gap to be filled later.
 - **Preserving ACLs, extended attributes or alternate data streams.**
-
-## Contributing
-
-Contributions are welcome.
-
-1. Open an issue or describe the change you want to make.
-2. Keep changes focused, with tests: new behavior needs a test, and bug fixes need a test that fails
-   without the fix.
-3. Run `python -m pytest`, `ruff check src tests` and `ruff format --check src tests` before
-   submitting.
-4. Do not weaken the safety guarantees (original preserved on pre-commit failure, no implicit
-   truncation, no silent in-place fallback) and do not add format-safety claims without format-level
-   implementation and tests.
-5. Keep this README and the `--help` output accurate; do not document features that do not exist.
-
-## License
-
-File Pumper is released under the [MIT License](LICENSE). The copyright line in `LICENSE` names
-"File Pumper contributors" generically; replace it with the actual rights holder if you publish or
-redistribute this project.
